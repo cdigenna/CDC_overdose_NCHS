@@ -178,6 +178,9 @@ ODs_polysub <- ODs_mut_excl %>%
                                            opioids==1 &
                                              psychostimulants==1 ~ 1,
                                            TRUE ~ 0),
+         opioids_and_ps_or_cocaine = case_when(opioids==1 &
+                                           (cocaine==1 | psychostimulants==1) ~ 1,
+                                           TRUE ~ 0),
          ps_and_cocaine_only = case_when(cocaine==1 &
                                            opioids==0 &
                                              psychostimulants==1 ~ 1,
@@ -269,6 +272,7 @@ OD_summary_polysub <- ODs_polysub %>%
   summarize("Opioid and Cocaine Overdose without Psychostimulants" = sum(opioids_and_cocaine_only),
             "Opioid and Psychostimulant Overdose without Cocaine" = sum(opioids_and_ps_only),
             "Psychostimulant and Cocaine Overdose without Opioids" = sum(ps_and_cocaine_only),
+            "Opioid Overdose with Cocaine OR Psychostimulants" = sum(opioids_and_ps_or_cocaine),
             "Opioid, Psychostimulant, and Cocaine Overdoses" = sum(opioids_ps_and_cocaine),
             "Opioid and Cocaine Overdose without Fentanyl or Psychostimulants" = sum(opioids_without_fentanyl_and_cocaine_only),
             "Opioid and Psychostimulant Overdose without Fentanyl or Cocaine" = sum(opioids_without_fentanyl_and_ps_only),
@@ -282,7 +286,7 @@ all_summaries <- cbind(OD_summary_not_mu,
                        OD_summary_not_mu_alc[,-1], 
                        OD_summary_mu_alc[,-1],
                        OD_summary_polysub[,-1])
-write.csv(all_summaries, "OD_category_summaries.csv")
+#write.csv(all_summaries, "OD_category_summaries.csv")
   
 ```
 
