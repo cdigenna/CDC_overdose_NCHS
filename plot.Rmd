@@ -1,0 +1,59 @@
+---
+title: "figures"
+author: "Catherine DiGennaro"
+date: "5/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+```{r}
+plot_data <-
+  grant_summary %>% #grant_summary is output by 'analyze ODs.rmd'
+  pivot_longer(-year) %>%
+  group_by(name) %>%
+  summarize(growth = value[year == 2019] - value[year == 2011]) %>%
+  ungroup()
+
+plot_data$name <-
+  gsub("heroin with cocaine", "heroin with\n cocaine", plot_data$name)
+plot_data$name <-
+  gsub("Synthetic opioids a", "Synthetic opioids\n a", plot_data$name)
+```
+
+```{r}
+p <- plot_data %>%
+  mutate(name = fct_reorder(name, growth)) %>%
+  ggplot(aes(x = growth, y = name)) +
+  geom_point(aes(color = growth), stat = 'identity', size = 2) +
+  scale_color_gradient2(low = "#4974A5", mid = "#E4DAED", high = "#9A2B2E") +
+  geom_segment(aes(
+    y = name,
+    x = 0,
+    yend = name,
+    xend = growth
+  ),
+  color = "black") +
+  labs(
+    title = "Change in Number of Overdose Deaths from 2011 to 2019, by Drugs Present",
+    x = "Change in overdose deaths",
+    y = NULL,
+    color = NULL,
+    caption = "Data: National Center for Health Statistics, Centers for Disease Control and Prevention"
+  ) +
+  theme_bw() +
+  theme(
+    plot.caption = element_text(hjust = 0, face = "italic"),
+    plot.title.position = "plot",
+    plot.caption.position =  "plot",
+    panel.background = element_rect(fill = "#fcfbfa")
+  )
+p
+
+ggsave("change_figure.png", dpi = "retina")
+```
+

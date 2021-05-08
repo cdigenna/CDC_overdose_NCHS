@@ -10,9 +10,7 @@ CDC/NCHS has the original multiple mortality cause-of-death data in .DUSMCPUB (f
 4. Summary file generated will contain number of OD deaths for each drug category for each year
 
 ## Results
-![All Overdose Deaths, by Drug Category](all_OD.png?raw=true)
-![All Overdose Deaths, Mutually Exclusive, by Drug Category](all_od_mutexcl.png)
-![All Polysubstance Overdose Deaths by Category](all_polysub_OD.png)
+![Change in Overdoses from 2011 to 2019, by Drug Category](change_figure.png?raw=true)
 
 
 

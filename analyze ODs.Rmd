@@ -354,17 +354,19 @@ all_summaries <- cbind(OD_summary_not_mu,
 
 summary needed for FDA grant
 ```{r}
-grant_summary <- ODs_polysub %>% 
-  group_by(year) %>% 
-  summarize("Heroin only" = sum(heroin_only),
-            "Rx opioids only" = sum(rx_opioids_only),
-            "Synthetic opioids only" = sum(fentanyl_only),
-            "Cocaine only" = sum(cocaine_only),
-            "Psychostimulants only" = sum(psychostimulants_only),
-            "Rx opioids or heroin with cocaine or psychostimulants" = sum(rx_opioid_or_heroin_and_coc_or_PS),
-            "Synthetic opioids and psychostimulants only" = sum(fentanyl_and_PS),
-            "Synthetic opioids and cocaine only" = sum(fentanyl_and_coc),
-            "All other drug combinations" = sum(all_other_drug_combos))
+grant_summary <- ODs_polysub %>%
+  group_by(year) %>%
+  summarize(
+    "Heroin only" = sum(heroin_only),
+    "Rx opioids only" = sum(rx_opioids_only),
+    "Synthetic opioids only" = sum(fentanyl_only),
+    "Cocaine only" = sum(cocaine_only),
+    "Psychostimulants only" = sum(psychostimulants_only),
+    "Rx opioids or heroin with cocaine or psychostimulants" = sum(rx_opioid_or_heroin_and_coc_or_PS),
+    "Synthetic opioids and psychostimulants only" = sum(fentanyl_and_PS),
+    "Synthetic opioids and cocaine only" = sum(fentanyl_and_coc),
+    "All other drug combinations" = sum(all_other_drug_combos)
+  )
 
 #write.csv(grant_summary, "grant_summary_ODs.csv")
 
