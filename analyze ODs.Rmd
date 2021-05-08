@@ -223,7 +223,7 @@ ODs_polysub <- ODs_mut_excl %>%
         rx_opioids_only == 0 &
         fentanyl_only == 0 &
         cocaine_only == 0 &
-        psychostimulants_only &
+        psychostimulants_only == 0 &
         rx_opioid_or_heroin_and_coc_or_PS == 0 &
         fentanyl_and_PS == 0 &
         fentanyl_and_coc == 0 ~ 1,
