@@ -10,9 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-- all data available from [NBER](https://www.nber.org/research/data/mortality-data-vital-statistics-nchs-multiple-cause-death-data)
-- all data theoretically available from [CDC/NCHS](https://www.cdc.gov/nchs/data_access/vitalstatsonline.htm), but something is wrong with 2018 data
-
 Import all data
 ```{r}
 files <- Sys.glob("Data_NBER/*")

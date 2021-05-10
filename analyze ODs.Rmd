@@ -47,10 +47,10 @@ ODs_classified <- all_ODs %>%
                         TRUE ~ 0),
     psychostimulants = case_when(grepl(psychostimulants, all_codes) ~ 1,
                                  TRUE ~ 0)
+    # ,alcohol = case_when(grepl(alcohol, all_codes) ~ 1,
+    #                      TRUE ~ 0))
   )
 
-         # ,alcohol = case_when(grepl(alcohol, all_codes) ~ 1,
-         #                     TRUE ~ 0))
 ```
 
 skip for FDA grant;
