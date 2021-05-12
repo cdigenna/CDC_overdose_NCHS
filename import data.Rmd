@@ -10,14 +10,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-Import all data
+Import all data - each file is 500-800MB
 ```{r}
 files <- Sys.glob("Data_NBER/*")
 print(files)
 for(i in files) {
   filename <- paste0("deaths_", str_extract(i, "[:digit:]+"))
   # print(filename)
-  assign(filename, read.csv(i))
+  assign(filename, read_csv(i))
 }
 ```
 
@@ -29,6 +29,55 @@ UCOD_OD_codes <- c("X40","X41","X42","X43","X44",
                    "Y10","Y11","Y12","Y13","Y14")
 
 # filter down to only OD deaths, keep sex, age, place of death, race/ethnicity, year, and all assigned ICD-10 codes
+
+ODs_99 <- deaths_1999 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_00 <- deaths_2000 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, starts_with("record_"), race, hispanic, year)
+
+ODs_01 <- deaths_2001 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_02 <- deaths_2002 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_03 <- deaths_2003 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_04 <- deaths_2004 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_05 <- deaths_2005 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_06 <- deaths_2006 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_07 <- deaths_2007 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_08 <- deaths_2008 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_09 <- deaths_2009 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_10 <- deaths_2010 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
 ODs_11 <- deaths_2011 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
   select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
@@ -68,7 +117,19 @@ ODs_19 <- deaths_2019 %>%
 
 ```{r}
 #merge into one dataset and save
-all_ODs <- rbind(ODs_11,
+all_ODs <- rbind(ODs_99,
+                 ODs_00,
+                 ODs_01,
+                 ODs_02,
+                 ODs_03,
+                 ODs_04,
+                 ODs_05,
+                 ODs_06,
+                 ODs_07,
+                 ODs_08,
+                 ODs_09,
+                 ODs_10,
+                 ODs_11,
                  ODs_12,
                  ODs_13,
                  ODs_14,
