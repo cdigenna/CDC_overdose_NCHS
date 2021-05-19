@@ -195,42 +195,77 @@ assign polysubstance drug overdoses by combos of drugs present
 ```{r}
 ODs_polysub <- ODs_mut_excl %>%
   mutate(
-    synthetics_with_or_wo_other_opioids = case_when(
-      fentanyl == 1 &
-        cocaine == 0 &
-        psychostimulants == 0 ~ 1,
-      TRUE ~ 0
-    ),
-    fentanyl_and_PS = case_when(
-      heroin == 0 &
-        rx_opioids == 0 &
-        fentanyl == 1 &
-        cocaine == 0 &
-        psychostimulants == 1 ~ 1,
-      TRUE ~ 0
-    ),
-    fentanyl_and_coc = case_when(
-      heroin == 0 &
-        rx_opioids == 0 &
-        fentanyl == 1 &
-        cocaine == 1 &
-        psychostimulants == 0 ~ 1,
-      TRUE ~ 0
-    ),
-    PS_and_coc = case_when(
-      heroin == 0 &
-        rx_opioids == 0 &
+    heroin_with_or_without_rx = case_when(
+      heroin == 1 &
         fentanyl == 0 &
-        psychostimulants == 1 & 
+        cocaine == 0 &
+        psychostimulants == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    PS_and_synthetics_with_or_without_opioids_no_coc = case_when(
+      psychostimulants == 1 &
+        fentanyl == 1 &
+        cocaine == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    coc_and_synthetics_with_or_without_opioids_no_PS = case_when(
+      psychostimulants == 0 &
+        fentanyl == 1 &
         cocaine == 1 ~ 1,
       TRUE ~ 0
     ),
-    cocaine_or_PS_and_rx_or_heroin = case_when(
-      (heroin == 1 |
+    coc_with_heroin_or_rx = case_when(
+      cocaine == 1 &
+        (heroin == 1 |
         rx_opioids == 1) &
         fentanyl == 0 &
-        (cocaine == 1 |
-           psychostimulants == 1) ~ 1,
+        psychostimulants == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    ps_with_heroin_or_rx = case_when(
+      cocaine == 0 &
+        (heroin == 1 |
+        rx_opioids == 1) &
+        fentanyl == 0 &
+        psychostimulants == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    synthetics_without_PS_or_coc_with_or_without_other_opioids = case_when(
+      fentanyl == 1 &
+        psychostimulants == 0 &
+        cocaine == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    PS_coc_with_or_without_opioids = case_when(
+      psychostimulants == 1 &
+        cocaine == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    # PS_coc_synthetics_with_or_without_rx_and_heroin = case_when(
+    #   psychostimulants == 1 &
+    #     cocaine == 1 &
+    #     fentanyl == 1  ~ 1,
+    #   TRUE ~ 0
+    # ),
+    # PS_coc_only = case_when(
+    #   psychostimulants == 1 &
+    #     cocaine == 1 &
+    #     fentanyl == 0 &
+    #     rx_opioids == 0 &
+    #     heroin == 0 ~ 1,
+    #   TRUE ~ 0
+    # ),
+    all_other_combos = case_when(
+      rx_opioids_only == 0 &
+        heroin_with_or_without_rx == 0 &
+        cocaine_only == 0 &
+        psychostimulants_only == 0 &
+        PS_and_synthetics_with_or_without_opioids_no_coc == 0 &
+        coc_and_synthetics_with_or_without_opioids_no_PS == 0 &
+        coc_with_heroin_or_rx == 0 &
+        ps_with_heroin_or_rx == 0 &
+        synthetics_without_PS_or_coc_with_or_without_other_opioids == 0 &
+        PS_coc_with_or_without_opioids == 0 ~ 1,
       TRUE ~ 0
     )
     
@@ -361,20 +396,25 @@ summary needed for FDA grant
 grant_summary <- ODs_polysub %>%
   group_by(year) %>%
   summarize(
-    "Heroin only" = sum(heroin_only),
     "Rx opioids only" = sum(rx_opioids_only),
+    "Heroin with or without Rx opioids" = sum(heroin_with_or_without_rx),
     "Cocaine only" = sum(cocaine_only),
     "Psychostimulants only" = sum(psychostimulants_only),
-    "Synthetic opioids with or without any other opioids" = sum(synthetics_with_or_wo_other_opioids),
-    "Synthetic opioids and psychostimulants only" = sum(fentanyl_and_PS),
-    "Synthetic opioids and cocaine only" = sum(fentanyl_and_coc),
-    "Psychostimulants and cocaine only" = sum(PS_and_coc),
-    "Psychostimulants or cocaine with Rx opioids or heroin only" = sum(cocaine_or_PS_and_rx_or_heroin)
+    "Psychostimulants and synthetics with or without other opioids" = sum(PS_and_synthetics_with_or_without_opioids_no_coc),
+    "Cocaine and synthetics with or without other opioids" = sum(coc_and_synthetics_with_or_without_opioids_no_PS),
+    "Cocaine with heroin and/or Rx opioids" = sum(coc_with_heroin_or_rx),
+    "Psychostimulants with heroin and/or Rx opioids" = sum(ps_with_heroin_or_rx),
+    "Synthetics with or without other opioids" = sum(synthetics_without_PS_or_coc_with_or_without_other_opioids),
+    "Psychostimulants and cocaine with or without opioids" = sum(PS_coc_with_or_without_opioids),
+    "All other drug combinations" = sum(all_other_combos)
   )
 
 #write.csv(grant_summary, "grant_summary_ODs.csv")
 
 ```
+
+
+supplementary quick analyses ---
 
 PS quick summary - how many psychostimulant-involved ODs are psychostimulant-only?
 ```{r}
@@ -397,6 +437,18 @@ ps_p <- PS_summary %>%
   theme_bw()
 
 ps_p
+```
+
+all possible combinations
+```{r}
+drugs <- c("rx_opioids", "heroin", "fentanyl", "psychostimulants", "cocaine")
+two <- data.frame(combn(drugs, 2))
+three <- data.frame(combn(drugs, 3))
+four <- data.frame(combn(drugs, 4))
+
+# write.csv(two, "two.csv")
+# write.csv(three, "three.csv")
+# write.csv(four, "four.csv")
 ```
 
 

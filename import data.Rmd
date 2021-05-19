@@ -16,7 +16,6 @@ files <- Sys.glob("Data_NBER/*")
 print(files)
 for(i in files) {
   filename <- paste0("deaths_", str_extract(i, "[:digit:]+"))
-  # print(filename)
   assign(filename, read_csv(i))
 }
 ```
