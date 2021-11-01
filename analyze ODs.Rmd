@@ -267,6 +267,11 @@ ODs_polysub <- ODs_mut_excl %>%
         synthetics_without_PS_or_coc_with_or_without_other_opioids == 0 &
         PS_coc_with_or_without_opioids == 0 ~ 1,
       TRUE ~ 0
+    ),
+    ps_or_coc_NOT_MUTEXCL = case_when(
+      (psychostimulants == 1 |
+        cocaine == 1 ~ 1),
+      TRUE ~ 0
     )
     
     #,
@@ -451,6 +456,19 @@ four <- data.frame(combn(drugs, 4))
 # write.csv(four, "four.csv")
 ```
 
+summary of cocaine or PS, not mutually exclusive
+```{r}
+ps_or_coc <- ODs_polysub %>% 
+  group_by(year) %>% 
+  summarize("Psychostimulant- or Cocaine-involved Overdoses" = sum(ps_or_coc_NOT_MUTEXCL))
+
+write.csv(ps_or_coc, "PS_or_Cocaine_ODs.csv")
+
+ps_OR_coc_p <- ps_or_coc %>% 
+  ggplot(aes(x = year, y = `Psychostimulant- or Cocaine-involved Overdoses`)) + 
+  geom_line() + 
+  theme_bw()
+```
 
 
 
