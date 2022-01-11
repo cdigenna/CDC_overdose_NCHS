@@ -1,5 +1,7 @@
 *.csv
 *.xlsx
+*.DUSMCPUB_r20220105
+*.DUSMCPUB
 .DS_Store
 .Rproj.user
 .Rhistory

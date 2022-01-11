@@ -26,7 +26,8 @@ assign specific drug category codes
 # opioids <- "T400|T401|T402|T403|T404|T406"
 # opioids_without_fentanyl <- "T400|T401|T402|T403|T406"
 heroin <- "T401"
-rx_opioids <- "T400|T402|T403|T406"
+rx_opioids <- "T400|T402|T403"
+other <- "T406"
 fentanyl <- "T404"
 cocaine <- "T405"
 psychostimulants <- "T436"
@@ -43,6 +44,8 @@ ODs_classified <- all_ODs %>%
                            TRUE ~ 0),
     fentanyl = case_when(grepl(fentanyl, all_codes) ~ 1,
                          TRUE ~ 0),
+    other = case_when(grepl(other, all_codes) ~ 1,
+                      TRUE ~ 0),
     cocaine = case_when(grepl(cocaine, all_codes) ~ 1,
                         TRUE ~ 0),
     psychostimulants = case_when(grepl(psychostimulants, all_codes) ~ 1,
@@ -133,62 +136,7 @@ ODs_mut_excl <- ODs_classified %>%
         cocaine == 0 &
         psychostimulants == 1 ~ 1,
       TRUE ~ 0
-    ) #,
-         # opioids_only_w_alc = case_when(opioids==1 & 
-         #                                  cocaine==0 & 
-         #                                  psychostimulants==0 &
-         #                                  alcohol==1 ~ 1,
-         #                          TRUE ~ 0),
-         # opioids_without_fentanyl_only_w_alc = case_when(opioids_without_fentanyl==1 &
-         #                                             fentanyl==0 &
-         #                                             cocaine==0 &
-         #                                             psychostimulants==0 &
-         #                                             alcohol==1 ~ 1,
-         #                                           TRUE ~ 0),
-         # fentanyl_only_w_alc = case_when(fentanyl==1 & 
-         #                             cocaine==0 &
-         #                             psychostimulants==0 & 
-         #                             opioids_without_fentanyl==0 &
-         #                             alcohol==1 ~ 1, 
-         #                           TRUE ~ 0),
-         # cocaine_only_w_alc = case_when(cocaine==1 &
-         #                            opioids==0 &
-         #                            psychostimulants==0 &
-         #                              alcohol==1 ~ 1,
-         #                          TRUE ~ 0),
-         # psychostimulants_only_w_alc = case_when(psychostimulants==1 &
-         #                                     cocaine==0 &
-         #                                     opioids==0 &
-         #                                       alcohol==1 ~ 1,
-         #                                   TRUE ~ 0),
-         # opioids_only_wo_alc = case_when(opioids==1 & 
-         #                                  cocaine==0 & 
-         #                                  psychostimulants==0 &
-         #                                  alcohol==0 ~ 1,
-         #                          TRUE ~ 0),
-         # opioids_without_fentanyl_only_wo_alc = case_when(opioids_without_fentanyl==1 &
-         #                                             fentanyl==0 &
-         #                                             cocaine==0 &
-         #                                             psychostimulants==0 &
-         #                                             alcohol==0 ~ 1,
-         #                                           TRUE ~ 0),
-         # fentanyl_only_wo_alc = case_when(fentanyl==1 & 
-         #                             cocaine==0 &
-         #                             psychostimulants==0 & 
-         #                             opioids_without_fentanyl==0 &
-         #                             alcohol==0 ~ 1, 
-         #                           TRUE ~ 0),
-         # cocaine_only_wo_alc = case_when(cocaine==1 &
-         #                            opioids==0 &
-         #                            psychostimulants==0 &
-         #                              alcohol==0 ~ 1,
-         #                          TRUE ~ 0),
-         # psychostimulants_only_wo_alc = case_when(psychostimulants==1 &
-         #                                     cocaine==0 &
-         #                                     opioids==0 &
-         #                                       alcohol==0 ~ 1,
-         #                                   TRUE ~ 0)
-         )
+    ))
 ```
 
 assign polysubstance drug overdoses by combos of drugs present
@@ -332,6 +280,18 @@ ODs_polysub <- ODs_mut_excl %>%
 
 generate summaries by year and save to output file
 ```{r}
+
+# OD_summary <- ODs_polysub %>% 
+#   group_by(year) %>% 
+#   summarize("Rx Opioids Only" = sum(rx_opioids_only),
+#             "Fentanyl Only" = sum(fentanyl_only),
+#             "Cocaine Only"= sum(cocaine_only),
+#             "Psychostimulants Only" = sum(psychostimulants_only),
+#             "Heroin with or without Rx" = sum(heroin_with_or_without_rx),
+            
+            
+  
+  
 OD_summary_not_mu <- ODs_polysub %>% 
   group_by(year) %>% 
   summarize("Opioid Overdose Deaths" = sum(opioids),
@@ -414,8 +374,109 @@ grant_summary <- ODs_polysub %>%
     "All other drug combinations" = sum(all_other_combos)
   )
 
-#write.csv(grant_summary, "grant_summary_ODs.csv")
+write.csv(grant_summary, "summary_ODs.csv")
 
+```
+
+categorize OD deaths for model
+```{r}
+ODs_model <- ODs_classified %>% 
+  filter(heroin == 1 | rx_opioids == 1 | fentanyl == 1 | other == 1) %>% 
+  mutate(
+    rx_only = case_when(
+      heroin == 0 &
+        rx_opioids == 1 &
+        other == 0 &
+        fentanyl == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    rx_and_synth = case_when(
+      heroin == 0 &
+        rx_opioids == 1 &
+        other == 0 &
+        fentanyl == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    rx_and_heroin = case_when(
+      heroin == 1 &
+        rx_opioids == 1 &
+        other == 0 &
+        fentanyl == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    rx_and_other = case_when(
+      heroin == 0 &
+        rx_opioids == 1 &
+        other == 1 &
+        fentanyl == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    rx_multiple = case_when(  #category 5
+      heroin == 0 &
+        rx_opioids == 1 &
+        other == 1 &
+        fentanyl == 1 ~ 1, 
+      TRUE ~ 0
+    ),
+    heroin_only = case_when(
+      heroin == 1 &
+        rx_opioids == 0 &
+        other == 0 &
+        fentanyl == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    heroin_with_synth = case_when(
+      heroin == 1 &
+        rx_opioids == 0 &
+        other == 0 &
+        fentanyl == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    heroin_with_other = case_when(
+      heroin == 1 &
+        rx_opioids == 0 &
+        other == 1 &
+        fentanyl == 0 ~ 1,
+      TRUE ~ 0
+    ),
+    heroin_multiple = case_when(  #Category 9
+      heroin == 1 &
+        ((rx_opioids == 1 & other == 1) |
+           (rx_opioids == 1 & fentanyl == 1) |
+           (fentanyl == 1 & other == 1)) ~ 1, 
+    TRUE ~ 0
+    ),
+    synth_only = case_when(
+      heroin == 0 &
+        rx_opioids == 0 &
+        other == 0 &
+        fentanyl == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    synth_other = case_when(
+      heroin == 0 &
+        rx_opioids == 0 &
+        other == 1 &
+        fentanyl == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    other_only = case_when(
+      heroin == 0 &
+        rx_opioids == 0 &
+        other == 1 &
+        fentanyl == 0 ~ 1,
+      TRUE ~ 0
+    ))
+```
+
+
+summary needed for model
+```{r}
+model_summary <- ODs_model %>% 
+  group_by(year) %>% 
+  summarize(
+    
+  )
 ```
 
 

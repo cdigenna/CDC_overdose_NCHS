@@ -112,6 +112,10 @@ ODs_18 <- deaths_2018 %>%
 ODs_19 <- deaths_2019 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
   select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+
+ODs_20 <- deaths_2020 %>% 
+  filter(ucod %in% UCOD_OD_codes) %>% 
+  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
 ```
 
 ```{r}
@@ -136,7 +140,8 @@ all_ODs <- rbind(ODs_99,
                  ODs_16,
                  ODs_17,
                  ODs_18,
-                 ODs_19) 
+                 ODs_19,
+                 ODs_20) 
 write.csv(all_ODs, "NCHS_all_ODs.csv")
 ```
 
