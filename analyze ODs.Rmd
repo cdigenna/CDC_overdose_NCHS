@@ -474,9 +474,22 @@ summary needed for model
 ```{r}
 model_summary <- ODs_model %>% 
   group_by(year) %>% 
-  summarize(
+  summarize("(1) rx opioids only" = sum(rx_only),
+            "(2) rx opioids w/ synth" = sum(rx_and_synth),
+            "(3) rx opioids w/ heroin" = sum(rx_and_heroin),
+            "(4) rx opioids w/ other" = sum(rx_and_other),
+            "(5) rx multiple" = sum(rx_multiple),
+            "(6) heroin only" = sum(heroin_only),
+            "(7) heroin w/ synth" = sum(heroin_with_synth),
+            "(8) heroin w/ other" = sum(heroin_with_other),
+            "(9) heroin multiple" = sum(heroin_multiple),
+            "(10) synth only" = sum(synth_only),
+            "(11) synth w/ other" = sum(synth_other),
+            "(12) other only" = sum(other_only)
     
   )
+
+write.csv(model_summary, "summary_nvss_overdose_deaths.csv")
 ```
 
 
