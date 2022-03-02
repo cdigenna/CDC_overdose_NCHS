@@ -544,5 +544,49 @@ ps_OR_coc_p <- ps_or_coc %>%
   theme_bw()
 ```
 
+how many cocaine and meth involved deaths involved fent with other opioids, fent only, and other opioids but not fent?
+```{r}
+ODs_coc_and_meth <- ODs_classified %>% 
+   mutate(
+     coc_meth_fent_other_opioids = case_when(
+      (heroin == 1 | rx_opioids == 1) &
+        fentanyl == 1 &
+        (cocaine == 1 | psychostimulants == 1) ~ 1,
+      TRUE ~ 0
+     ),
+     coc_meth_fent_only = case_when(
+      heroin == 0 & 
+        rx_opioids == 0 &
+        fentanyl == 1 &
+        (cocaine == 1 | psychostimulants == 1) ~ 1,
+      TRUE ~ 0
+     ),
+     coc_meth_other_opioids = case_when(
+      (heroin == 1 | rx_opioids == 1) &
+        fentanyl == 0 &
+        (cocaine == 1 | psychostimulants == 1) ~ 1,
+      TRUE ~ 0
+     ),
+     coc_meth_no_opioids = case_when(
+       heroin == 0 & 
+        rx_opioids == 0 &
+        fentanyl == 0 &
+        (cocaine == 1 | psychostimulants == 1) ~ 1,
+      TRUE ~ 0
+     ),
+   )
+```
 
+summarize cocaine and meth data
+```{r}
+coc_and_meth <- ODs_coc_and_meth %>% 
+  group_by(year) %>% 
+  summarize("Cocaine or Meth with Fent and Other Opioids" = sum(coc_meth_fent_other_opioids),
+            "Cocaine or Meth with Fent and not Other Opioids" = sum(coc_meth_fent_only),
+            "Cocaine or Meth with Other Opioids and not Fent" = sum(coc_meth_other_opioids),
+            "Cocaine or Meth without Opioids" = sum(coc_meth_no_opioids))
+
+write.csv(coc_and_meth, "NVSS_cocaine_and_meth.csv")
+  
+```
 
