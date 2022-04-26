@@ -8,6 +8,10 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(tidycensus)
+`%!in%` <- Negate(`%in%`)
+#census_api_key("5512ff2f4dc8ad3053285afb019b439ed4bfab34", install=TRUE)
+census_api_key(Sys.getenv("CENSUS_API_KEY"))
 ```
 
 import OD data
@@ -554,13 +558,37 @@ ODs_coc_and_meth <- ODs_classified %>%
         (cocaine == 1 | psychostimulants == 1) ~ 1,
       TRUE ~ 0
      ),
-     coc_meth_fent_only = case_when(
-      heroin == 0 & 
+     coc_fent = case_when(
+       heroin == 0 & 
         rx_opioids == 0 &
         fentanyl == 1 &
-        (cocaine == 1 | psychostimulants == 1) ~ 1,
+        cocaine == 1 &
+        psychostimulants == 0 ~ 1,
       TRUE ~ 0
      ),
+     meth_fent = case_when(
+       heroin == 0 & 
+        rx_opioids == 0 &
+        fentanyl == 1 &
+        cocaine == 0 &
+        psychostimulants == 1 ~ 1,
+      TRUE ~ 0
+     ),
+     coc_and_meth_and_fent = case_when(
+       heroin == 0 & 
+        rx_opioids == 0 &
+        fentanyl == 1 &
+        cocaine == 1 &
+        psychostimulants == 1 ~ 1,
+      TRUE ~ 0
+     ),
+     # coc_meth_fent_only = case_when(
+     #  heroin == 0 & 
+     #    rx_opioids == 0 &
+     #    fentanyl == 1 &
+     #    (cocaine == 1 | psychostimulants == 1) ~ 1,
+     #  TRUE ~ 0
+     # ),
      coc_meth_other_opioids = case_when(
       (heroin == 1 | rx_opioids == 1) &
         fentanyl == 0 &
@@ -582,11 +610,191 @@ summarize cocaine and meth data
 coc_and_meth <- ODs_coc_and_meth %>% 
   group_by(year) %>% 
   summarize("Cocaine or Meth with Fent and Other Opioids" = sum(coc_meth_fent_other_opioids),
-            "Cocaine or Meth with Fent and not Other Opioids" = sum(coc_meth_fent_only),
+            "Cocaine with Fentanyl without Other Opioids"= sum(coc_fent),
+            "Meth with Fentanyl without Other Opioids" = sum(meth_fent),
+            "Cocaine and Meth with Fentanyl no Other Opioids" = sum(coc_and_meth_and_fent),
+            #"Cocaine or Meth with Fent and not Other Opioids" = sum(coc_meth_fent_only),
             "Cocaine or Meth with Other Opioids and not Fent" = sum(coc_meth_other_opioids),
             "Cocaine or Meth without Opioids" = sum(coc_meth_no_opioids))
 
 write.csv(coc_and_meth, "NVSS_cocaine_and_meth.csv")
   
 ```
+
+Demographic analysis - race
+```{r}
+#census race variables
+race_vars <- c(
+Hispanic = "B03001_003",
+`NH White` = "B03002_003",
+`NH Black` = "B03002_004",
+`NH Asian` = "B03002_006",
+`NH Native American` = "B03002_005"
+)
+
+race_by_yr <- get_acs(geography = "us", variables = race_vars, year = 2020)
+
+ODs_race <- ODs_polysub %>% 
+  mutate(race_recode = case_when(
+    (hispanic == 0 | between(hispanic, 100, 199) | between(hispanic, 996, 999) | hispanic == 6) & race == 1 ~ "NH White",
+    (hispanic == 0 | between(hispanic, 100, 199) | between(hispanic, 996, 999) | hispanic == 7) & race == 2 ~ "NH Black", 
+    (hispanic == 0 | between(hispanic, 100, 199) | between(hispanic, 996, 999)) & race == 3 ~ "NH Native American",
+    (hispanic == 0 | between(hispanic, 100, 199) | between(hispanic, 996, 999)) & race %in% c(4, 5, 6, 7, 18, 28, 38, 48, 58, 68, 78) ~ "NH Asian",
+    (hispanic == 1 | between(hispanic, 200, 299) | hispanic %in% c(1, 2, 3,4, 5, 9, 99))  ~ "Hispanic",
+    TRUE ~ "ERROR"
+  )) 
+
+OD_race_summary <- ODs_race %>% 
+  group_by(year, race_recode) %>% 
+  summarize("Heroin-involved" = sum(heroin),
+            "Rx opioids-involved" = sum(rx_opioids),
+            "Fentanyl-involved" = sum(fentanyl),
+            "Other opioids-involved" = sum(other),
+            "Cocaine-involved" = sum(cocaine),
+            "PS-involved" = sum(psychostimulants),
+            "Rx opioids only" = sum(rx_opioids_only), 
+            "Fentanyl only" = sum(fentanyl_only),
+            "Cocaine only" =  sum(cocaine_only),
+            "PS only" = sum(psychostimulants_only),
+            "Heroin with or without Rx" = sum(heroin_with_or_without_rx),
+            "PS and fentanyl, no cocaine" = sum(PS_and_synthetics_with_or_without_opioids_no_coc),
+            "Cocaine and fentanyl, no PS" = sum(coc_and_synthetics_with_or_without_opioids_no_PS),
+            "Cocaine with heroin or Rx" = sum(coc_with_heroin_or_rx),
+            "PS with heroin or Rx" = sum(ps_with_heroin_or_rx),
+            "Fentanyl without stimulants, with or without opioids" = sum(synthetics_without_PS_or_coc_with_or_without_other_opioids),
+            "PS and Cocaine, with or without opioids" = sum(PS_coc_with_or_without_opioids),
+            "All other combos" = sum(all_other_combos)
+            ) %>% 
+  pivot_longer(!c(year, race_recode), names_to = "drug", values_to = "num_deaths") %>% 
+  left_join(race_by_yr, by = c("race_recode" = "variable")) %>% 
+  mutate(std_prop_race = num_deaths/estimate)
+
+race_p <- OD_race_summary %>% 
+  filter(drug %!in% c("Heroin-involved", "Rx opioids-involved", "Fentanyl-involved", "Other opioids-involved", "Cocaine-involved", "PS-involved")) %>%
+  ggplot(aes(x = year, y = std_prop_race, color = drug)) +
+  geom_line() + 
+  labs(y = "Overdose Death Rate", color = "Drug") +
+  facet_wrap(~race_recode) +
+  theme_bw() + 
+  theme(legend.position = "bottom")
+
+simple_drugs_race_p <- OD_race_summary %>% 
+  filter(drug %in% c("Heroin-involved", "Rx opioids-involved", "Fentanyl-involved", "Other opioids-involved", "Cocaine-involved", "PS-involved")) %>%  
+  ggplot(aes(x = year, y = std_prop_race, color = drug)) +
+  geom_line() +
+  labs(y = "Overdose Death Rate", color = "Drug Involved") +
+  scale_y_continuous(labels = number) +
+  facet_wrap(~race_recode) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+ggsave(plot = race_p, filename = "race_p.svg", device= "svg", height = 7, width = 11)
+ggsave(plot = simple_drugs_race_p, filename = "simple_drugs_race_p.svg", device= "svg", height = 7, width = 11)
+```
+
+Demographic analysis - age
+```{r}
+ODs_age <- ODs_polysub %>% 
+  mutate(age_recode = case_when(
+    ager12 == 1 ~ "Under 1 year",
+    ager12 == 2 ~ "1-4 years",
+    ager12 == 3 ~ "5-14 years",
+    ager12 == 4 ~ "15-24 years",
+    ager12 == 5 ~ "25-34 years", 
+    ager12 == 6 ~ "35-44 years",
+    ager12 == 7 ~ "45-54 years",
+    ager12 == 8 ~ "55-64 years",
+    ager12 == 9 ~ "65-74 years",
+    ager12 == 10 ~ "75-84 years",
+    ager12 == 11 ~ "85+ years",
+    ager12 == 12 ~ "Age unknown",
+    TRUE ~ "ERROR"
+  ))
+
+OD_age_summary <- ODs_age %>% 
+  group_by(year, age_recode) %>% 
+  summarize("Heroin-involved" = sum(heroin),
+            "Rx opioids-involved" = sum(rx_opioids),
+            "Fentanyl-involved" = sum(fentanyl),
+            "Other opioids-involved" = sum(other),
+            "Cocaine-involved" = sum(cocaine),
+            "PS-involved" = sum(psychostimulants),
+            "Rx opioids only" = sum(rx_opioids_only), 
+            "Fentanyl only" = sum(fentanyl_only),
+            "Cocaine only" =  sum(cocaine_only),
+            "PS only" = sum(psychostimulants_only),
+            "Heroin with or without Rx" = sum(heroin_with_or_without_rx),
+            "PS and fentanyl, no cocaine" = sum(PS_and_synthetics_with_or_without_opioids_no_coc),
+            "Cocaine and fentanyl, no PS" = sum(coc_and_synthetics_with_or_without_opioids_no_PS),
+            "Cocaine with heroin or Rx" = sum(coc_with_heroin_or_rx),
+            "PS with heroin or Rx" = sum(ps_with_heroin_or_rx),
+            "Fentanyl without stimulants, with or without opioids" = sum(synthetics_without_PS_or_coc_with_or_without_other_opioids),
+            "PS and Cocaine, with or without opioids" = sum(PS_coc_with_or_without_opioids),
+            "All other combos" = sum(all_other_combos)
+            ) %>% 
+  pivot_longer(!c(year, age_recode), names_to = "drug", values_to = "num_deaths")
+
+age_p <- OD_age_summary %>% 
+  filter(drug %!in% c("Heroin-involved", "Rx opioids-involved", "Fentanyl-involved", "Other opioids-involved", "Cocaine-involved", "PS-involved"),
+         age_recode %in% c("15-24 years", "25-34 years", "35-44 years", "45-54 years", "55-64 years", "65-74 years", "75-84 years", "85+ years")) %>%
+  ggplot(aes(x = year, y = num_deaths, color = drug)) +
+  geom_line() + 
+  facet_wrap(~age_recode) +
+  theme_bw()
+
+simple_drugs_age_p <- OD_age_summary %>% 
+  filter(drug %in% c("Heroin-involved", "Rx opioids-involved", "Fentanyl-involved", "Other opioids-involved", "Cocaine-involved", "PS-involved"),
+         age_recode %in% c("15-24 years", "25-34 years", "35-44 years", "45-54 years", "55-64 years", "65-74 years", "75-84 years", "85+ years")) %>%  
+  ggplot(aes(x = year, y = num_deaths, color = drug)) +
+  geom_line() + 
+  facet_wrap(~age_recode) +
+  theme_bw()
+```
+Demographic analysis - sex
+```{r}
+ODs_sex <- ODs_polysub %>% 
+  mutate(sex_recode = case_when(
+    sex == 1 | sex == "M" ~ "Male",
+    sex == 2 | sex == "F" ~ "Female",
+    TRUE ~ "ERROR"
+  ))
+
+OD_sex_summary <- ODs_sex %>% 
+  group_by(year, sex_recode) %>% 
+  summarize("Heroin-involved" = sum(heroin),
+            "Rx opioids-involved" = sum(rx_opioids),
+            "Fentanyl-involved" = sum(fentanyl),
+            "Other opioids-involved" = sum(other),
+            "Cocaine-involved" = sum(cocaine),
+            "PS-involved" = sum(psychostimulants),
+            "Rx opioids only" = sum(rx_opioids_only), 
+            "Fentanyl only" = sum(fentanyl_only),
+            "Cocaine only" =  sum(cocaine_only),
+            "PS only" = sum(psychostimulants_only),
+            "Heroin with or without Rx" = sum(heroin_with_or_without_rx),
+            "PS and fentanyl, no cocaine" = sum(PS_and_synthetics_with_or_without_opioids_no_coc),
+            "Cocaine and fentanyl, no PS" = sum(coc_and_synthetics_with_or_without_opioids_no_PS),
+            "Cocaine with heroin or Rx" = sum(coc_with_heroin_or_rx),
+            "PS with heroin or Rx" = sum(ps_with_heroin_or_rx),
+            "Fentanyl without stimulants, with or without opioids" = sum(synthetics_without_PS_or_coc_with_or_without_other_opioids),
+            "PS and Cocaine, with or without opioids" = sum(PS_coc_with_or_without_opioids),
+            "All other combos" = sum(all_other_combos)
+            ) %>% 
+  pivot_longer(!c(year, sex_recode), names_to = "drug", values_to = "num_deaths")
+
+sex_p <- OD_sex_summary %>% 
+  filter(drug %!in% c("Heroin-involved", "Rx opioids-involved", "Fentanyl-involved", "Other opioids-involved", "Cocaine-involved", "PS-involved")) %>%
+  ggplot(aes(x = year, y = num_deaths, color = drug)) +
+  geom_line() + 
+  facet_wrap(~sex_recode) +
+  theme_bw()
+
+simple_drugs_sex_p <- OD_sex_summary %>% 
+  filter(drug %in% c("Heroin-involved", "Rx opioids-involved", "Fentanyl-involved", "Other opioids-involved", "Cocaine-involved", "PS-involved")) %>%  
+  ggplot(aes(x = year, y = num_deaths, color = drug)) +
+  geom_line() + 
+  facet_wrap(~sex_recode) +
+  theme_bw()
+```
+ 
 

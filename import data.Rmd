@@ -31,91 +31,92 @@ UCOD_OD_codes <- c("X40","X41","X42","X43","X44",
 
 ODs_99 <- deaths_1999 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_00 <- deaths_2000 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, starts_with("record_"), race, hispanic, year)
+  select(sex, age, ager12, placdth, starts_with("record_"), race, hispanic, year)
 
 ODs_01 <- deaths_2001 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_02 <- deaths_2002 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_03 <- deaths_2003 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_04 <- deaths_2004 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_05 <- deaths_2005 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_06 <- deaths_2006 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_07 <- deaths_2007 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_08 <- deaths_2008 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_09 <- deaths_2009 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_10 <- deaths_2010 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_11 <- deaths_2011 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_12 <- deaths_2012 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_13 <- deaths_2013 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_14 <- deaths_2014 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_15 <- deaths_2015 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_16 <- deaths_2016 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_17 <- deaths_2017 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_18 <- deaths_2018 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_19 <- deaths_2019 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, ager12, placdth, record_1:record_20, race, hispanic, year)
 
 ODs_20 <- deaths_2020 %>% 
   filter(ucod %in% UCOD_OD_codes) %>% 
-  select(sex, age, ager52, placdth, record_1:record_20, race, hispanic, year)
+  select(sex, age, Age_Recode_12, placdth, record_1:record_20, race, hispanic, year) %>% 
+  rename(ager12 = Age_Recode_12)
 ```
 
 ```{r}
