@@ -5,6 +5,9 @@ date: "5/5/2021"
 output: html_document
 ---
 
+# 5/9/22 for this analysis
+# need `cocaine not PS` with model categories and `PS not cocaine` with model categories, and `PS and cocaine` and `neither`
+#will compare ratio of fentanyl without heroin to, heroin without fentanyl, to heroin and fentanyl in three groups: PS no cocaine group, cocaine no PS group, and neither coc or PS group
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
@@ -224,6 +227,28 @@ ODs_polysub <- ODs_mut_excl %>%
       (psychostimulants == 1 |
         cocaine == 1 ~ 1),
       TRUE ~ 0
+    ),
+    PS_involving = case_when(
+      psychostimulants == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    coc_involving = case_when(
+      cocaine == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    opioids_and_coc = case_when(
+      (rx_opioids == 1 | heroin == 1 | fentanyl | other == 1) &
+        cocaine == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    opioids_and_ps = case_when(
+      (rx_opioids == 1 | heroin == 1 | fentanyl | other == 1) &
+        psychostimulants == 1 ~ 1,
+      TRUE ~ 0
+    ),
+    opioids = case_when(
+      (rx_opioids == 1 | heroin == 1 | fentanyl | other == 1) ~ 1,
+      TRUE ~ 0
     )
     
     #,
@@ -280,6 +305,162 @@ ODs_polysub <- ODs_mut_excl %>%
     # )
   )
 ```
+
+
+Stimulants + opioids preliminary analysis 5/10/22
+```{r}
+ODs_stim_and_opioids <- ODs_mut_excl %>%
+  mutate(h_no_f_no_stim = case_when( #OC1S1
+    heroin == 1 &
+      fentanyl == 0 &
+      cocaine == 0 &
+      psychostimulants == 0 ~ 1,
+    TRUE ~ 0
+  ),
+  no_h_f_no_stim = case_when( #OC2S1
+    heroin == 0 &
+      fentanyl == 1 &
+      cocaine == 0 &
+      psychostimulants == 0 ~ 1,
+    TRUE ~ 0
+  ),
+  h_and_f_no_stim = case_when( #OC3S1
+    heroin == 1 &
+      fentanyl == 1 &
+      cocaine == 0 &
+      psychostimulants == 0 ~ 1,
+    TRUE ~ 0
+  ),
+  h_no_f_PS_only = case_when( #OC1S2
+    heroin == 1 &
+      fentanyl == 0 &
+      cocaine == 0 &
+      psychostimulants == 1 ~ 1,
+    TRUE ~ 0
+  ),
+  no_h_f_PS_only = case_when( #OC2S2
+    heroin == 0 &
+      fentanyl == 1 &
+      cocaine == 0 &
+      psychostimulants == 1 ~ 1,
+    TRUE ~ 0
+  ),
+  h_and_f_PS_only = case_when( #OC3S2
+    heroin == 1 &
+      fentanyl == 1 &
+      cocaine == 0 &
+      psychostimulants == 1 ~ 1,
+    TRUE ~ 0
+  ),
+  h_no_f_coc_only = case_when( #OC1S3
+    heroin == 1 &
+      fentanyl == 0 &
+      cocaine == 1 &
+      psychostimulants == 0 ~ 1,
+    TRUE ~ 0
+  ),
+  no_h_f_coc_only = case_when( #OC2S3
+    heroin == 0 &
+      fentanyl == 1 &
+      cocaine == 1 &
+      psychostimulants == 0 ~ 1,
+    TRUE ~ 0
+  ),
+  h_and_f_coc_only = case_when( #OC3S3
+    heroin == 1 &
+      fentanyl == 1 &
+      cocaine == 1 &
+      psychostimulants == 0 ~ 1,
+    TRUE ~ 0
+  ),
+  h_no_f_coc_and_PS = case_when( #OC1S4
+    heroin == 1 &
+      fentanyl == 0 &
+      cocaine == 1 &
+      psychostimulants == 1 ~ 1,
+    TRUE ~ 0
+  ),
+  no_h_f_coc_and_PS = case_when( #OC2S4
+    heroin == 0 &
+      fentanyl == 1 &
+      cocaine == 1 &
+      psychostimulants == 1 ~ 1,
+    TRUE ~ 0
+  ),
+  h_and_f_coc_and_PS = case_when( #OC3S4
+    heroin == 1 &
+      fentanyl == 1 &
+      cocaine == 1 &
+      psychostimulants == 1 ~ 1,
+    TRUE ~ 0
+  )
+  )
+  
+```
+
+Stimulants + opioids summary and graphing 
+```{r}
+ODs_stim_and_opioids_summary = ODs_stim_and_opioids %>% 
+  group_by(year) %>% 
+  summarize("H no Stim" = sum(h_no_f_no_stim),
+            "F no Stim" = sum(no_h_f_no_stim),
+            "H+F no Stim" = sum(h_and_f_no_stim),
+            "H+PS" = sum(h_no_f_PS_only),
+            "F+PS" = sum(no_h_f_PS_only),
+            "H+F+PS" = sum(h_and_f_PS_only),
+            "H+Cocaine" = sum(h_no_f_coc_only),
+            "F+Cocaine" = sum(no_h_f_coc_only),
+            "H+F+Cocaine" = sum(h_and_f_coc_only),
+            "H+PS+Cocaine" = sum(h_no_f_coc_and_PS),
+            "F+PS+Cocaine" = sum(no_h_f_coc_and_PS),
+            "H+F+PS+Cocaine" = sum(h_and_f_coc_and_PS),
+            ) %>% 
+  pivot_longer(-year, names_to = "drug", values_to = "num_deaths")
+
+S1_p <- ODs_stim_and_opioids_summary %>% 
+  filter(drug %in% c("H no Stim", "F no Stim", "H+F no Stim")) %>% 
+  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug, "H no Stim", "F no Stim", "H+F no Stim"))) + 
+  labs(x = "Deaths", y = NULL, title = "S1, No Stimulants", fill = NULL, color = NULL) +
+  scale_color_brewer(palette = "Dark2") +
+  geom_line() +
+  #geom_col(position = "fill") +
+  theme_bw()
+
+S2_p <- ODs_stim_and_opioids_summary %>% 
+  filter(drug %in% c("H+PS", "F+PS", "H+F+PS")) %>% 
+  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug, "H+PS", "F+PS", "H+F+PS"))) + 
+  labs(x = NULL, y = NULL, title = "S2, PS Only", fill = NULL, color = NULL) +
+  scale_color_brewer(palette = "Dark2") +
+  geom_line() +
+  #geom_col(position = "fill") +
+  theme_bw()
+
+S3_p <- ODs_stim_and_opioids_summary %>% 
+  filter(drug %in% c("H+Cocaine", "F+Cocaine", "H+F+Cocaine")) %>% 
+  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug,"H+Cocaine", "F+Cocaine", "H+F+Cocaine"))) + 
+  labs(x = NULL, y = NULL, title = "S3, Cocaine Only", fill = NULL, color = NULL) +
+  scale_color_brewer(palette = "Dark2") +
+  geom_line() +
+  #geom_col(position = "fill") +
+  theme_bw()
+
+S4_p <- ODs_stim_and_opioids_summary %>% 
+  filter(drug %in% c("H+PS+Cocaine", "F+PS+Cocaine", "H+F+PS+Cocaine")) %>% 
+  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug, "H+PS+Cocaine", "F+PS+Cocaine", "H+F+PS+Cocaine"))) + 
+  labs(x = NULL, y = NULL, title = "S4, PS and Cocaine", fill = NULL, color = NULL) +
+  scale_color_brewer(palette = "Dark2") +
+  geom_line() +
+  #geom_col(position = "fill") +
+  theme_bw()
+
+S1_p
+S2_p
+S3_p
+S4_p
+
+
+```
+
 
 
 generate summaries by year and save to output file
@@ -383,6 +564,7 @@ write.csv(grant_summary, "summary_ODs.csv")
 ```
 
 categorize OD deaths for model
+# need a no-opioid category, with just the PS and coc crosstabs
 ```{r}
 ODs_model <- ODs_classified %>% 
   filter(heroin == 1 | rx_opioids == 1 | fentanyl == 1 | other == 1) %>% 
@@ -473,7 +655,7 @@ ODs_model <- ODs_classified %>%
     ))
 ```
 
-
+# 5/9/21 model categories here
 summary needed for model
 ```{r}
 model_summary <- ODs_model %>% 
@@ -538,12 +720,30 @@ summary of cocaine or PS, not mutually exclusive
 ```{r}
 ps_or_coc <- ODs_polysub %>% 
   group_by(year) %>% 
-  summarize("Psychostimulant- or Cocaine-involved Overdoses" = sum(ps_or_coc_NOT_MUTEXCL))
+  summarize("Psychostimulant- and Cocaine-involved Overdoses" = sum(PS_coc_with_or_without_opioids),
+            "PS-Involved Overdoses" = sum(PS_involving),
+            "Cocaine-Involved Overdoses" = sum(coc_involving)) %>% 
+  pivot_longer(-year, names_to = "drug")
 
 write.csv(ps_or_coc, "PS_or_Cocaine_ODs.csv")
 
 ps_OR_coc_p <- ps_or_coc %>% 
-  ggplot(aes(x = year, y = `Psychostimulant- or Cocaine-involved Overdoses`)) + 
+  ggplot(aes(x = year, y = value, color = drug)) + 
+  geom_line() + 
+  theme_bw()
+
+
+opioids_ps_or_coc <- ODs_polysub %>% 
+  group_by(year) %>% 
+  summarize("PS-Involved Overdoses" = sum(PS_involving),
+            "Cocaine-Involved Overdoses" = sum(coc_involving),
+            "Cocaine- and Opioid-Involved Overdoses" = sum(opioids_and_coc),
+            "PS- and Opioid-Involved Overdoses" = sum(opioids_and_ps),
+            "Any Opioid-Involved Overdoses" = sum(opioids)) %>% 
+  pivot_longer(-year, names_to = "drug")
+
+opioids_ps_and_coc_p <- opioids_ps_or_coc %>% 
+  ggplot(aes(x = year, y = value, color = drug)) + 
   geom_line() + 
   theme_bw()
 ```
