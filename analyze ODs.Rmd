@@ -419,44 +419,48 @@ ODs_stim_and_opioids_summary = ODs_stim_and_opioids %>%
 
 S1_p <- ODs_stim_and_opioids_summary %>% 
   filter(drug %in% c("H no Stim", "F no Stim", "H+F no Stim")) %>% 
-  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug, "H no Stim", "F no Stim", "H+F no Stim"))) + 
+  ggplot(aes(x = year, y = num_deaths, fill = fct_relevel(drug, "H no Stim", "H+F no Stim", "F no Stim"))) + 
   labs(x = "Deaths", y = NULL, title = "S1, No Stimulants", fill = NULL, color = NULL) +
-  scale_color_brewer(palette = "Dark2") +
-  geom_line() +
-  #geom_col(position = "fill") +
+  scale_fill_brewer(palette = "Dark2") +
+  #geom_line() +
+  geom_col(position = "fill") +
   theme_bw()
 
 S2_p <- ODs_stim_and_opioids_summary %>% 
   filter(drug %in% c("H+PS", "F+PS", "H+F+PS")) %>% 
-  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug, "H+PS", "F+PS", "H+F+PS"))) + 
+  ggplot(aes(x = year, y = num_deaths, fill = fct_relevel(drug, "H+PS", "H+F+PS", "F+PS"))) + 
   labs(x = NULL, y = NULL, title = "S2, PS Only", fill = NULL, color = NULL) +
-  scale_color_brewer(palette = "Dark2") +
-  geom_line() +
-  #geom_col(position = "fill") +
+  scale_fill_brewer(palette = "Dark2") +
+  #geom_line() +
+  geom_col(position = "fill") +
   theme_bw()
 
 S3_p <- ODs_stim_and_opioids_summary %>% 
   filter(drug %in% c("H+Cocaine", "F+Cocaine", "H+F+Cocaine")) %>% 
-  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug,"H+Cocaine", "F+Cocaine", "H+F+Cocaine"))) + 
+  ggplot(aes(x = year, y = num_deaths, fill = fct_relevel(drug,"H+Cocaine", "H+F+Cocaine", "F+Cocaine"))) + 
   labs(x = NULL, y = NULL, title = "S3, Cocaine Only", fill = NULL, color = NULL) +
-  scale_color_brewer(palette = "Dark2") +
-  geom_line() +
-  #geom_col(position = "fill") +
+  scale_fill_brewer(palette = "Dark2") +
+  #geom_line() +
+  geom_col(position = "fill") +
   theme_bw()
 
 S4_p <- ODs_stim_and_opioids_summary %>% 
   filter(drug %in% c("H+PS+Cocaine", "F+PS+Cocaine", "H+F+PS+Cocaine")) %>% 
-  ggplot(aes(x = year, y = num_deaths, color = fct_relevel(drug, "H+PS+Cocaine", "F+PS+Cocaine", "H+F+PS+Cocaine"))) + 
+  ggplot(aes(x = year, y = num_deaths, fill = fct_relevel(drug, "H+PS+Cocaine", "H+F+PS+Cocaine", "F+PS+Cocaine"))) + 
   labs(x = NULL, y = NULL, title = "S4, PS and Cocaine", fill = NULL, color = NULL) +
-  scale_color_brewer(palette = "Dark2") +
-  geom_line() +
-  #geom_col(position = "fill") +
+  scale_fill_brewer(palette = "Dark2") +
+  #geom_line() +
+  geom_col(position = "fill") +
   theme_bw()
 
 S1_p
 S2_p
 S3_p
 S4_p
+
+ggsave(plot = S4_p, filename = "S4_p.svg", device = "svg", height = 5, width = 9)
+
+
 
 
 ```
